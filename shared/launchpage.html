@@ -2,6 +2,15 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <title>Course Launch Page</title>
+    
+    
+    <style type="text/css" media="screen">
+		@import url( ../shared/jquery-ui.css );
+	</style>
+	
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.min.js" type="text/javascript"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.5/jquery-ui.min.js" type="text/javascript"></script>
+    
     <script src="scormfunctions.js" type="text/javascript"></script>
     <script type="text/javascript">
     
@@ -98,6 +107,9 @@
     
     function doStart(){
         
+        
+        $("#notesWin" ).dialog({ autoOpen: false, resizable: false, width: 600});
+        
         //get the iFrame sized correctly and set up
         SetupIFrame();
         
@@ -130,6 +142,12 @@
             else{
                 currentPage = 0;
             }
+        }
+        
+        //don't enable Skip to Quiz if we're on the quiz
+        if (hasAssessment == true){
+            var jumpButton = document.getElementById("butJump");
+            jumpButton.disabled = true;
         }
         
         goToPage();
@@ -165,7 +183,16 @@
         
         //save the current location as the bookmark
         ScormProcessSetValue("cmi.location", currentPage);
-     
+        
+        //calculate and save the completion percentage based on current page and total number of pages
+        var progress = 0
+        if (currentPage > 0 && pageArray.length > 1){
+            progress = currentPage / (pageArray.length - 1);
+        }
+        
+        progress = Math.round(progress*100) / 100; //Round off to 2 decimal places
+        ScormProcessSetValue("cmi.progress_measure", progress);
+        
         //in this example, if there is an assessment, the SCO isn't completed until it is submitted
         if (currentPage == (pageArray.length - 1)){
             reachedEnd = true;
@@ -175,13 +202,17 @@
             //objectives simpler.
             if (hasAssessment == false){
                 ScormProcessSetValue("cmi.completion_status", "completed");
-                ScormProcessSetValue("cmi.success_status", "passed");
+                
+                //Now that we are using the 4th Edition features, we don't have to include this
+                //extraneous satisfaction, everything can be based on completion.
+                //ScormProcessSetValue("cmi.success_status", "passed");
             }
             
             //invoke Commit because sometimes that will trigger the sequencer to 
             //update the available navigational controls
             ScormProcessCommit();
         }
+        
     }
     
     function doUnload(pressedExit){
@@ -216,6 +247,47 @@
             currentPage++;
         }
         goToPage();
+    }
+    
+    function doJumpToTest(){
+        ScormProcessSetValue("adl.nav.request", "{target=assessment_item}jump");
+        doUnload(true);
+    }
+    
+    function doShowNotes(){
+        notesText = GetNotesText();
+        $("#txtNotes").val(notesText);
+        $("#notesWin" ).dialog('open');
+    }
+    
+    function doSaveNotes(){
+        SaveNotesText($("#txtNotes").val())
+        $("#notesWin" ).dialog('close')
+    }
+    
+    function GetNotesText(){
+        dataBucketsCount = ScormProcessGetValue("adl.data._count")
+        dataBucketsCount = parseInt(dataBucketsCount);
+        
+        for (var i=0; i < dataBucketsCount; i++){
+            if (ScormProcessGetValue("adl.data." + i + ".id") == "com.scorm.golfsamples.sequencing.forcedsequential.notesStorage"){
+                return ScormProcessGetValue("adl.data." + i + ".store")
+            }
+        }
+        
+        return "";
+    }
+    
+    function SaveNotesText(text){
+        dataBucketsCount = ScormProcessGetValue("adl.data._count")
+        dataBucketsCount = parseInt(dataBucketsCount);
+        
+        for (var i=0; i < dataBucketsCount; i++){
+            if (ScormProcessGetValue("adl.data." + i + ".id") == "com.scorm.golfsamples.sequencing.forcedsequential.notesStorage"){
+                ScormProcessSetValue("adl.data." + i + ".store", text);
+                return;
+            }
+        }
     }
     
     function doExit(){
@@ -361,7 +433,13 @@
         <input type="button" value="<- Previous" id="butPrevious" onclick="doPrevious();"/>
         <input type="button" value="Next ->" id="butNext" onclick="doNext();"/>
         <!--<input type="button" value="Exit" id="butExit" onclick="doExit();"/>-->
+        <input type="button" value="Skip to the Test" id="butJump" onclick="doJumpToTest();"/>
+        <input type="button" value="Notes" id="butNotes" onclick="doShowNotes();"/>
     </div>
-
+    
+    <div id="notesWin" title="Golf Notes">
+        <textarea id="txtNotes" rows="5" cols="50"></textarea>
+        <input type="button" value="Save" id="butSaveNotes" onclick="doSaveNotes();"/>
+    </div>
 </body>
 </html>
