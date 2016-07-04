@@ -194,3 +194,21 @@ function ScormProcessSetValue(element, value){
     }
     
 }
+
+function ScormProcessCommit(){
+    
+    var result;
+    
+    result = API.Commit("");
+    
+    if (result == SCORM_FALSE){
+        var errorNumber = API.GetLastError();
+        var errorString = API.GetErrorString(errorNumber);
+        var diagnostic = API.GetDiagnostic(errorNumber);
+        
+        var errorDescription = "Number: " + errorNumber + "\nDescription: " + errorString + "\nDiagnostic: " + diagnostic;
+        
+        alert("Error - Could not invoke Commit.\n\nYour results may not be recorded.\n\n" + errorDescription);
+        return;
+    }
+}

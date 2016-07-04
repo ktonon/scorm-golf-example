@@ -44,23 +44,48 @@
     /*************************************/
     //content definition
     /*************************************/
-    var pageArray = new Array(15);
+    var queryString = new String(document.location.search);
+    queryString = queryString.replace("?content=", "");
+    queryString = queryString.toLowerCase();
     
-    pageArray[0] = "Playing/Playing.html";
-    pageArray[1] = "Playing/Par.html";
-    pageArray[2] = "Playing/Scoring.html";
-    pageArray[3] = "Playing/OtherScoring.html";
-    pageArray[4] = "Playing/RulesOfGolf.html";
-    pageArray[5] = "Etiquette/Course.html";
-    pageArray[6] = "Etiquette/Distracting.html";
-    pageArray[7] = "Etiquette/Play.html";
-    pageArray[8] = "Handicapping/Overview.html";
-    pageArray[9] = "Handicapping/CalculatingHandicap.html";
-    pageArray[10] = "Handicapping/CalculatingScore.html";
-    pageArray[11] = "Handicapping/Example.html";
-    pageArray[12] = "HavingFun/HowToHaveFun.html";
-    pageArray[13] = "HavingFun/MakeFriends.html";
-    pageArray[14] = "shared/assessmenttemplate.html?questions=Playing&questions=Etiquette&questions=Handicapping&questions=HavingFun";
+    var hasAssessment = false;
+    
+    switch (queryString){
+        case "playing":
+            var pageArray = new Array(5);
+            pageArray[0] = "Playing/Playing.html";
+            pageArray[1] = "Playing/Par.html";
+            pageArray[2] = "Playing/Scoring.html";
+            pageArray[3] = "Playing/OtherScoring.html";
+            pageArray[4] = "Playing/RulesOfGolf.html";
+        break;
+        case "etiquette":
+            var pageArray = new Array(3);
+            pageArray[0] = "Etiquette/Course.html";
+            pageArray[1] = "Etiquette/Course.html";
+            pageArray[2] = "Etiquette/Play.html";
+        break;
+        case "handicapping":
+            var pageArray = new Array(4);
+            pageArray[0] = "Handicapping/Overview.html";
+            pageArray[1] = "Handicapping/CalculatingHandicap.html";
+            pageArray[2] = "Handicapping/CalculatingScore.html";
+            pageArray[3] = "Handicapping/CalculatingScore.html";
+        break;
+        case "havingfun":
+            var pageArray = new Array(2);
+            pageArray[0] = "HavingFun/HowToHaveFun.html";
+            pageArray[1] = "HavingFun/MakeFriends.html";
+        break;
+        case "assessment":
+            hasAssessment = true;
+            var pageArray = new Array(1);
+            pageArray[0] = "shared/assessmenttemplate.html?questions=Playing&questions=Etiquette&questions=Handicapping&questions=HavingFun";
+        break;
+    
+    }
+   
+    
     
     /*************************************/
     //navigation functions
@@ -133,6 +158,11 @@
             prevButton.disabled = false;
         }
         
+        if (pageArray.length == 1){
+            nextButton.disabled = true;
+            prevButton.disabled = true;
+        }
+        
         //save the current location as the bookmark
         ScormProcessSetValue("cmi.location", currentPage);
      
@@ -140,6 +170,17 @@
         if (currentPage == (pageArray.length - 1)){
             reachedEnd = true;
             ScormProcessSetValue("cmi.completion_status", "completed");
+            
+            //For simplicity's sake, mark the course as passed when it is completed
+            //and doesn't have a test. This will make our sequencing based on global
+            //objectives simpler.
+            if (hasAssessment == false){
+                ScormProcessSetValue("cmi.success_status", "passed");
+            }
+            
+            //invoke Commit because sometimes that will trigger the sequencer to 
+            //update the available navigational controls
+            ScormProcessCommit();
         }
     }
     
@@ -157,12 +198,8 @@
         
         ScormProcessSetValue("cmi.session_time", scormTime);
         
-        //if the user just closes the browser, we will default to saving 
-        //their progress data. If the user presses exit, he is prompted.
-        //If the user reached the end, the exit normall to submit results.
-        if (pressedExit == false && reachedEnd == false){
-            ScormProcessSetValue("cmi.exit", "suspend");
-        }
+        //always default to saving the runtime data in this example
+        ScormProcessSetValue("cmi.exit", "suspend");
         
         ScormProcessTerminate();
     }
@@ -321,7 +358,7 @@
     <div id="navDiv">
         <input type="button" value="<- Previous" id="butPrevious" onclick="doPrevious();"/>
         <input type="button" value="Next ->" id="butNext" onclick="doNext();"/>
-        <input type="button" value="Exit" id="butExit" onclick="doExit();"/>
+        <!--<input type="button" value="Exit" id="butExit" onclick="doExit();"/>-->
     </div>
 
 </body>
