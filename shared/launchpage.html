@@ -166,15 +166,15 @@
         //save the current location as the bookmark
         ScormProcessSetValue("cmi.location", currentPage);
      
-        //in this sample course, the course is considered complete when the last page is reached
+        //in this example, if there is an assessment, the SCO isn't completed until it is submitted
         if (currentPage == (pageArray.length - 1)){
             reachedEnd = true;
-            ScormProcessSetValue("cmi.completion_status", "completed");
             
             //For simplicity's sake, mark the course as passed when it is completed
             //and doesn't have a test. This will make our sequencing based on global
             //objectives simpler.
             if (hasAssessment == false){
+                ScormProcessSetValue("cmi.completion_status", "completed");
                 ScormProcessSetValue("cmi.success_status", "passed");
             }
             
@@ -253,6 +253,8 @@
         
         var scaledScore = score / 100;
         ScormProcessSetValue("cmi.score.scaled", scaledScore);
+        
+        ScormProcessSetValue("cmi.completion_status", "completed");
         
         //consider 70% to be passing
         if (score >= 70){

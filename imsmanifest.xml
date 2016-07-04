@@ -1,25 +1,24 @@
 <?xml version="1.0" standalone="no" ?>
 <!--
-Sequencing example demonstrating forced sequential order. SCORM 2004 3rd Edition.
+Sequencing example demonstrating rollup using only a post test. SCORM 2004 3rd Edition.
 
 Provided by Rustici Software - http://www.scorm.com
 
 Sequencing Strategy:
-This example demonstrates a sequencing strategy that requires the learner
-to visit the SCOs in order. Once a SCO has been visited, the learner can
-jump backwards to review material, but the learner can not jump ahead beyond
-the next SCO.
+This example maintains the sequencing strategy from the forced sequential example.
+It requires the learner to visit the SCOs in order. Once a SCO has been visited, 
+the learner can jump backwards to review material, but the learner can not jump 
+ahead beyond the next SCO.
 
 Rollup Strategy:
-Completion: All activities must be completed
-Satisfaction: All activities must be satisfied (activities without assessment are satisfied upon being completed)
-Score: No score is rolled up (all activities have objective measure weight = 0)
-
-This example also demonstrates using a sequencing collection to define sequencing rules
-that are common to every item.
+The course can only be completed and satisfied by completing and satisfying the posttest.
+Because of the sequencing stragety that requires all other activities to be completed before
+the post test can be accessed, by implication, all activities must be completed for the
+course to be completed. The score for the course is entirely dependant on the score from the post
+test.
 -->
 
-<manifest identifier="com.scorm.golfsamples.sequencing.forcedsequential.20043rd" version="1"
+<manifest identifier="com.scorm.golfsamples.sequencing.posttestrollup.20043rd" version="1"
           xmlns="http://www.imsglobal.org/xsd/imscp_v1p1"
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xmlns:adlcp="http://www.adlnet.org/xsd/adlcp_v1p3"
@@ -39,22 +38,20 @@ that are common to every item.
   
   <organizations default="golf_sample_default_org">
 
-    <!-- Since we're using global objectives, make sure to set them to not be global to system-->
     <organization identifier="golf_sample_default_org" adlseq:objectivesGlobalToSystem="false">
-      <title>Golf Explained - Sequencing Forced Order</title>
+      <title>Golf Explained - Sequencing Post Test Rollup</title>
 
       <item identifier="playing_item" identifierref="playing_resource">
         <title>Playing the Game</title>
         
-        <!-- Notice the refernce to the reusable sequencing collection (defined at the bottom)-->
-        <imsss:sequencing IDRef="common_seq_rules">
+        <!-- 
+        Notice the refernce to the reusable sequencing collection (defined at the bottom).
+        Every activity except the assessment references this common set of sequencing rules
+        that indicate the activity does not count towards completion.
+        -->
+        <imsss:sequencing IDRef="content_seq_rules">
           
           <imsss:objectives>
-            <!--
-            Each SCO has a global objective to that can be read by other SCOs to see if it is completed.
-            This global will be satisfied when the activity is satisfied since it is associated with the
-            primary objective
-            -->
             <imsss:primaryObjective objectiveID="playing_satisfied">
               <imsss:mapInfo targetObjectiveID = "com.scorm.golfsamples.sequencing.forcedsequential.playing_satisfied" 
                              readSatisfiedStatus = "true" writeSatisfiedStatus = "true"/>
@@ -65,23 +62,17 @@ that are common to every item.
       <item identifier="etuqiette_item" identifierref="etiquette_resource">
         <title>Etiquette</title>
         
-        <imsss:sequencing IDRef="common_seq_rules">
+        <imsss:sequencing IDRef="content_seq_rules">
         
           <imsss:sequencingRules>
 
             <imsss:preConditionRule>
               
-              <!--  
-              If the previous SCO is not satisfied or the status is unknown, disable this SCO.
-              Notice that the "not" operator isn't a logical NOT in which all other conditions evaluate
-              to true. Instead it indicates that "not satisfied" is the only condition that evaluates to true.
-              -->
               <imsss:ruleConditions conditionCombination="any">
                 <imsss:ruleCondition referencedObjective="previous_sco_satisfied" operator="not" condition="satisfied"/>
                 <imsss:ruleCondition referencedObjective="previous_sco_satisfied" operator="not" condition="objectiveStatusKnown"/>
               </imsss:ruleConditions>
             
-              <!--  'Disabled' will cause the SCO to be visible in the course tree, but not accessible via choice or flow.  -->
               <imsss:ruleAction action="disabled"/>
             
             </imsss:preConditionRule>
@@ -92,11 +83,7 @@ that are common to every item.
               <imsss:mapInfo targetObjectiveID = "com.scorm.golfsamples.sequencing.forcedsequential.etiquette_satisfied" 
                              readSatisfiedStatus = "true" writeSatisfiedStatus = "true"/>
             </imsss:primaryObjective>
-            
-            <!--
-            Set up another objective to read the status of this activity's prerequisite. We can then use this objective in
-            our sequencing rules to disable this activity.
-            -->
+
             <imsss:objective objectiveID="previous_sco_satisfied">
               <imsss:mapInfo targetObjectiveID="com.scorm.golfsamples.sequencing.forcedsequential.playing_satisfied" 
                              readSatisfiedStatus="true" writeSatisfiedStatus="false"/>
@@ -107,7 +94,7 @@ that are common to every item.
       </item>
       <item identifier="handicapping_item" identifierref="handicapping_resource">
         <title>Handicapping</title>
-        <imsss:sequencing IDRef="common_seq_rules">
+        <imsss:sequencing IDRef="content_seq_rules">
           <imsss:sequencingRules>
             <imsss:preConditionRule>
               <imsss:ruleConditions conditionCombination="any">
@@ -131,7 +118,7 @@ that are common to every item.
       </item>
       <item identifier="havingfun_item" identifierref="havingfun_resource">
         <title>Having Fun</title>
-        <imsss:sequencing IDRef="common_seq_rules">
+        <imsss:sequencing IDRef="content_seq_rules">
           <imsss:sequencingRules>
             <imsss:preConditionRule>
               <imsss:ruleConditions conditionCombination="any">
@@ -155,7 +142,9 @@ that are common to every item.
       </item>
       <item identifier="assessment_item" identifierref="assessment_resource">
         <title>Quiz</title>
-        <imsss:sequencing IDRef="common_seq_rules">
+        <!-- Note that the quiz does not reference the common sequencing colletion-->
+        <imsss:sequencing>
+
           <imsss:sequencingRules>
             <imsss:preConditionRule>
               <imsss:ruleConditions conditionCombination="any">
@@ -165,13 +154,23 @@ that are common to every item.
               <imsss:ruleAction action="disabled"/>
             </imsss:preConditionRule>
           </imsss:sequencingRules>
+          
+          <!-- 
+          Set the quiz to be the only activity that counts towards rollup so that the course 
+          will receive these values. Note, these values are the defaults and don't technically need to be
+          included in the manifest, but they are listed here for purposes of illustration.
+          -->
+          <imsss:rollupRules rollupObjectiveSatisfied="true" rollupProgressCompletion="true" objectiveMeasureWeight="1"></imsss:rollupRules>
+
           <imsss:objectives>
             <imsss:primaryObjective objectiveID="assessment_satisfied" />
             <imsss:objective objectiveID="previous_sco_satisfied">
-              <imsss:mapInfo targetObjectiveID="com.scorm.golfsamples.sequencing.forcedsequential.havingfun_satisfied" 
+              <imsss:mapInfo targetObjectiveID="com.scorm.golfsamples.sequencing.forcedsequential.havingfun_satisfied"
                              readSatisfiedStatus="true" writeSatisfiedStatus="false"/>
             </imsss:objective>
           </imsss:objectives>
+
+          <imsss:deliveryControls completionSetByContent="true" objectiveSetByContent="true"/>
         </imsss:sequencing>
       </item>
       <imsss:sequencing>
@@ -239,15 +238,13 @@ that are common to every item.
     </resource>
   </resources>
 
-  <!-- Define a reusable sequencing collection for rules used by all SCOs-->
   <imsss:sequencingCollection>
 
-    <imsss:sequencing ID="common_seq_rules">
+    <imsss:sequencing ID="content_seq_rules">
+      
+      <!-- Set all content SCOs to not count towards any rollup. Only the post test will count-->
+      <imsss:rollupRules rollupObjectiveSatisfied="false" rollupProgressCompletion="false" objectiveMeasureWeight="0"></imsss:rollupRules>
 
-      <!-- This course doesn't rollup a score -->
-      <imsss:rollupRules objectiveMeasureWeight="0"></imsss:rollupRules>
-
-      <!-- Set these values to prevent content from accidently being auto-completed/satisfied-->
       <imsss:deliveryControls completionSetByContent="true" objectiveSetByContent="true"/>
 
     </imsss:sequencing>
