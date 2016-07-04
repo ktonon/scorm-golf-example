@@ -1,24 +1,21 @@
 <?xml version="1.0" standalone="no" ?>
 <!--
-Sequencing example demonstrating rollup using only a post test. SCORM 2004 3rd Edition.
+Sequencing example demonstrating rollup using either a pre-test or a post-test. SCORM 2004 3rd Edition.
 
 Provided by Rustici Software - http://www.scorm.com
 
 Sequencing Strategy:
-This example maintains the sequencing strategy from the forced sequential example.
-It requires the learner to visit the SCOs in order. Once a SCO has been visited, 
-the learner can jump backwards to review material, but the learner can not jump 
-ahead beyond the next SCO.
+
+Free form navigation is allowed. The pre-test can only be attempted one time. Once
+a test is satisfied, both the pre and post tests are disabled. The post test can not
+be attempted until all of the content is completed.
 
 Rollup Strategy:
-The course can only be completed and satisfied by completing and satisfying the posttest.
-Because of the sequencing stragety that requires all other activities to be completed before
-the post test can be accessed, by implication, all activities must be completed for the
-course to be completed. The score for the course is entirely dependant on the score from the post
-test.
+The course can only be completed and satisfied either by passing the pretest (testing out)
+or by completing the entire course and passing the post test.
 -->
 
-<manifest identifier="com.scorm.golfsamples.sequencing.posttestrollup.20043rd" version="1"
+<manifest identifier="com.scorm.golfsamples.sequencing.preorposttestrollup.20043rd" version="1"
           xmlns="http://www.imsglobal.org/xsd/imscp_v1p1"
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xmlns:adlcp="http://www.adlnet.org/xsd/adlcp_v1p3"
@@ -35,147 +32,203 @@ test.
     <schema>ADL SCORM</schema>
     <schemaversion>2004 3rd Edition</schemaversion>
   </metadata>
-  
+
   <organizations default="golf_sample_default_org">
 
     <organization identifier="golf_sample_default_org" adlseq:objectivesGlobalToSystem="false">
-      <title>Golf Explained - Sequencing Post Test Rollup</title>
+      <title>Golf Explained - Sequencing Pre or Post Test Rollup</title>
 
-      <item identifier="playing_item" identifierref="playing_resource">
-        <title>Playing the Game</title>
-        
+      <!--
+      Add a dummy wrapper item around all content. Make it invisible so it doesn't
+      affect the user. Since the top level course has only this one child, the status for the
+      course as a whole will be dependent on this dummy item.
+      -->
+      <item identifier="dummy_item" isvisible="false">
+        <title>Dummy Item</title>
+       
+        <item identifier="pretest_item" identifierref="assessment_resource">
+          <title>Pre Test</title>
+
+          <imsss:sequencing>
+
+            <!--  Rule to disable the pre test after exceeding attempt limit  -->
+            <imsss:sequencingRules>
+              <imsss:preConditionRule>
+                <imsss:ruleConditions>
+                  <imsss:ruleCondition condition="attemptLimitExceeded"/>
+                </imsss:ruleConditions>
+                <imsss:ruleAction action="disabled"/>
+              </imsss:preConditionRule>
+
+              <!-- If any test (pre or post) has been satisfied, disable the tests-->
+              <imsss:preConditionRule>
+                <imsss:ruleConditions>
+                  <imsss:ruleCondition referencedObjective="assessment_satisfied" condition="satisfied"/>
+                </imsss:ruleConditions>
+                <imsss:ruleAction action="disabled"/>
+              </imsss:preConditionRule>
+
+            </imsss:sequencingRules>
+
+            <!--  The attempt limit ensures that the pre-test is only attempted one time.  -->
+            <imsss:limitConditions attemptLimit="1"/>
+
+            <imsss:objectives>
+              <imsss:primaryObjective objectiveID="assessment_satisfied">
+                <!-- Write the satisfaction status of the pretest to a global objective-->
+                <imsss:mapInfo targetObjectiveID="com.scorm.golfsamples.sequencing.preorposttestrollup.assessment_satisfied" writeNormalizedMeasure="true" writeSatisfiedStatus="true"/>
+              </imsss:primaryObjective>
+            </imsss:objectives>
+
+            <imsss:deliveryControls completionSetByContent="true" objectiveSetByContent="true"/>
+          </imsss:sequencing>
+        </item>
+
         <!-- 
-        Notice the refernce to the reusable sequencing collection (defined at the bottom).
-        Every activity except the assessment references this common set of sequencing rules
-        that indicate the activity does not count towards completion.
+        Create a dummy invisible wrapper around the content to make it easy to write a sequencing rule
+        that limits the post test's availability until all content is completed.
         -->
-        <imsss:sequencing IDRef="content_seq_rules">
-          
-          <imsss:objectives>
-            <imsss:primaryObjective objectiveID="playing_satisfied">
-              <imsss:mapInfo targetObjectiveID = "com.scorm.golfsamples.sequencing.forcedsequential.playing_satisfied" 
-                             readSatisfiedStatus = "true" writeSatisfiedStatus = "true"/>
-            </imsss:primaryObjective>
-          </imsss:objectives>
-        </imsss:sequencing>
-      </item>
-      <item identifier="etuqiette_item" identifierref="etiquette_resource">
-        <title>Etiquette</title>
-        
-        <imsss:sequencing IDRef="content_seq_rules">
-        
-          <imsss:sequencingRules>
+        <item identifier="content_wrapper" isvisible="false">
+          <title>Content Wrapper</title>
 
-            <imsss:preConditionRule>
-              
-              <imsss:ruleConditions conditionCombination="any">
-                <imsss:ruleCondition referencedObjective="previous_sco_satisfied" operator="not" condition="satisfied"/>
-                <imsss:ruleCondition referencedObjective="previous_sco_satisfied" operator="not" condition="objectiveStatusKnown"/>
-              </imsss:ruleConditions>
-            
-              <imsss:ruleAction action="disabled"/>
-            
-            </imsss:preConditionRule>
-            
-          </imsss:sequencingRules>
-          <imsss:objectives>
-            <imsss:primaryObjective objectiveID="etiquette_satisfied">
-              <imsss:mapInfo targetObjectiveID = "com.scorm.golfsamples.sequencing.forcedsequential.etiquette_satisfied" 
-                             readSatisfiedStatus = "true" writeSatisfiedStatus = "true"/>
-            </imsss:primaryObjective>
+          <item identifier="playing_item" identifierref="playing_resource">
+            <title>Playing the Game</title>
+            <imsss:sequencing>
+              <imsss:deliveryControls completionSetByContent="true" objectiveSetByContent="true"/>
+            </imsss:sequencing>
+          </item>
+          <item identifier="etuqiette_item" identifierref="etiquette_resource">
+            <title>Etiquette</title>
+            <imsss:sequencing>
+              <imsss:deliveryControls completionSetByContent="true" objectiveSetByContent="true"/>
+            </imsss:sequencing>
+          </item>
+          <item identifier="handicapping_item" identifierref="handicapping_resource">
+            <title>Handicapping</title>
+            <imsss:sequencing>
+              <imsss:deliveryControls completionSetByContent="true" objectiveSetByContent="true"/>
+            </imsss:sequencing>
+          </item>
+          <item identifier="havingfun_item" identifierref="havingfun_resource">
+            <title>Having Fun</title>
+            <imsss:sequencing>
+              <imsss:deliveryControls completionSetByContent="true" objectiveSetByContent="true"/>
+            </imsss:sequencing>
+          </item>
 
-            <imsss:objective objectiveID="previous_sco_satisfied">
-              <imsss:mapInfo targetObjectiveID="com.scorm.golfsamples.sequencing.forcedsequential.playing_satisfied" 
-                             readSatisfiedStatus="true" writeSatisfiedStatus="false"/>
-            </imsss:objective>
+          <imsss:sequencing>
+            <imsss:controlMode choice="true" flow="true"/>
+            <!--
+            Once all of the SCOs are completed, this dummy content wrapper is satisfied.
+            -->
+            <imsss:rollupRules>
             
-          </imsss:objectives>
-        </imsss:sequencing>
-      </item>
-      <item identifier="handicapping_item" identifierref="handicapping_resource">
-        <title>Handicapping</title>
-        <imsss:sequencing IDRef="content_seq_rules">
-          <imsss:sequencingRules>
-            <imsss:preConditionRule>
-              <imsss:ruleConditions conditionCombination="any">
-                <imsss:ruleCondition referencedObjective="previous_sco_satisfied" operator="not" condition="satisfied"/>
-                <imsss:ruleCondition referencedObjective="previous_sco_satisfied" operator="not" condition="objectiveStatusKnown"/>
-              </imsss:ruleConditions>
-              <imsss:ruleAction action="disabled"/>
-            </imsss:preConditionRule>
-          </imsss:sequencingRules>
-          <imsss:objectives>
-            <imsss:primaryObjective objectiveID="handicapping_satisfied">
-              <imsss:mapInfo targetObjectiveID = "com.scorm.golfsamples.sequencing.forcedsequential.handicapping_satisfied" 
-                             readSatisfiedStatus = "true" writeSatisfiedStatus = "true"/>
-            </imsss:primaryObjective>
-            <imsss:objective objectiveID="previous_sco_satisfied">
-              <imsss:mapInfo targetObjectiveID="com.scorm.golfsamples.sequencing.forcedsequential.etiquette_satisfied" 
-                             readSatisfiedStatus="true" writeSatisfiedStatus="false"/>
-            </imsss:objective>
-          </imsss:objectives>
-        </imsss:sequencing>
-      </item>
-      <item identifier="havingfun_item" identifierref="havingfun_resource">
-        <title>Having Fun</title>
-        <imsss:sequencing IDRef="content_seq_rules">
-          <imsss:sequencingRules>
-            <imsss:preConditionRule>
-              <imsss:ruleConditions conditionCombination="any">
-                <imsss:ruleCondition referencedObjective="previous_sco_satisfied" operator="not" condition="satisfied"/>
-                <imsss:ruleCondition referencedObjective="previous_sco_satisfied" operator="not" condition="objectiveStatusKnown"/>
-              </imsss:ruleConditions>
-              <imsss:ruleAction action="disabled"/>
-            </imsss:preConditionRule>
-          </imsss:sequencingRules>
-          <imsss:objectives>
-            <imsss:primaryObjective objectiveID="havingfun_satisfied">
-              <imsss:mapInfo targetObjectiveID = "com.scorm.golfsamples.sequencing.forcedsequential.havingfun_satisfied"
-                             readSatisfiedStatus = "true" writeSatisfiedStatus = "true"/>
-            </imsss:primaryObjective>
-            <imsss:objective objectiveID="previous_sco_satisfied">
-              <imsss:mapInfo targetObjectiveID="com.scorm.golfsamples.sequencing.forcedsequential.handicapping_satisfied"
-                             readSatisfiedStatus="true" writeSatisfiedStatus="false"/>
-            </imsss:objective>
-          </imsss:objectives>
-        </imsss:sequencing>
-      </item>
-      <item identifier="assessment_item" identifierref="assessment_resource">
-        <title>Quiz</title>
-        <!-- Note that the quiz does not reference the common sequencing colletion-->
+              <imsss:rollupRule childActivitySet="all">
+                <imsss:rollupConditions>
+                  <imsss:rollupCondition condition="completed"/>
+                </imsss:rollupConditions>
+                <imsss:rollupAction action="satisfied"/>
+              </imsss:rollupRule>
+            </imsss:rollupRules>
+
+            <!-- Write this objective's satisfaction status to a global that we can use as a prerequisite for accessing the post test.-->
+            <imsss:objectives>
+              <imsss:primaryObjective objectiveID="content_completed">
+                <imsss:mapInfo targetObjectiveID="com.scorm.golfsamples.sequencing.preorposttestrollup.content_completed" writeSatisfiedStatus="true"/>
+              </imsss:primaryObjective>
+            </imsss:objectives>
+
+          </imsss:sequencing>
+        </item>
+
+        <item identifier="posttest_item" identifierref="assessment_resource">
+          <title>Post Test</title>
+
+          <imsss:sequencing>
+
+            <imsss:sequencingRules>
+
+              <!-- Once a test (pre or post) has been satisfied, disable it so it can't be taken again.-->
+              <imsss:preConditionRule>
+                <imsss:ruleConditions>
+                  <imsss:ruleCondition referencedObjective="assessment_satisfied" condition="satisfied"/>
+                </imsss:ruleConditions>
+                <imsss:ruleAction action="disabled"/>
+              </imsss:preConditionRule>
+
+              <!-- If the content is not completed, then don't allow access to the post test -->
+              <imsss:preConditionRule>
+                <imsss:ruleConditions conditionCombination="any">
+                  <imsss:ruleCondition referencedObjective="content_completed" operator="not" condition="satisfied"/>
+                  <imsss:ruleCondition referencedObjective="content_completed" operator="not" condition="objectiveStatusKnown"/>
+                </imsss:ruleConditions>
+                <imsss:ruleAction action="disabled"/>
+              </imsss:preConditionRule>
+            </imsss:sequencingRules>
+
+            <imsss:objectives>
+              <imsss:primaryObjective objectiveID="assessment_satisfied">
+                <!-- Write the satisfaction status of the posttest to a global objective-->
+                <imsss:mapInfo targetObjectiveID="com.scorm.golfsamples.sequencing.preorposttestrollup.assessment_satisfied" writeNormalizedMeasure="true" writeSatisfiedStatus="true"/>
+              </imsss:primaryObjective>
+
+              <!-- Read from the content completed global to disable the post test until the content is completed-->
+              <imsss:objective objectiveID="content_completed">
+                <imsss:mapInfo targetObjectiveID="com.scorm.golfsamples.sequencing.preorposttestrollup.content_completed" readSatisfiedStatus="true"/>
+              </imsss:objective>
+
+            </imsss:objectives>
+
+            <imsss:deliveryControls completionSetByContent="true" objectiveSetByContent="true"/>
+          </imsss:sequencing>
+        </item>
+        
+        <!-- Sequencing rules for the dummy wrapper item-->
         <imsss:sequencing>
+          <imsss:controlMode choice="true" flow="true"/>
 
-          <imsss:sequencingRules>
-            <imsss:preConditionRule>
-              <imsss:ruleConditions conditionCombination="any">
-                <imsss:ruleCondition referencedObjective="previous_sco_satisfied" operator="not" condition="satisfied"/>
-                <imsss:ruleCondition referencedObjective="previous_sco_satisfied" operator="not" condition="objectiveStatusKnown"/>
-              </imsss:ruleConditions>
-              <imsss:ruleAction action="disabled"/>
-            </imsss:preConditionRule>
-          </imsss:sequencingRules>
-          
           <!-- 
-          Set the quiz to be the only activity that counts towards rollup so that the course 
-          will receive these values. Note, these values are the defaults and don't technically need to be
-          included in the manifest, but they are listed here for purposes of illustration.
+          Include some rollup rules so that the dummy aggregation's status will change after the pretest is completed
+          so that rollup proceeds to the top level
           -->
-          <imsss:rollupRules rollupObjectiveSatisfied="true" rollupProgressCompletion="true" objectiveMeasureWeight="1"></imsss:rollupRules>
-
+          <imsss:rollupRules>
+            <imsss:rollupRule childActivitySet="any">
+              <imsss:rollupConditions>
+                <imsss:rollupCondition condition="completed"/>
+              </imsss:rollupConditions>
+              <imsss:rollupAction action="incomplete"/>
+            </imsss:rollupRule>
+            <imsss:rollupRule childActivitySet="all">
+              <imsss:rollupConditions>
+                <imsss:rollupCondition condition="completed"/>
+              </imsss:rollupConditions>
+              <imsss:rollupAction action="completed"/>
+            </imsss:rollupRule>
+          </imsss:rollupRules>
+          
+          <!-- Set up a read map so that this dummy wrapper's satisfaction and measure are pulled from the test global. -->
           <imsss:objectives>
-            <imsss:primaryObjective objectiveID="assessment_satisfied" />
-            <imsss:objective objectiveID="previous_sco_satisfied">
-              <imsss:mapInfo targetObjectiveID="com.scorm.golfsamples.sequencing.forcedsequential.havingfun_satisfied"
-                             readSatisfiedStatus="true" writeSatisfiedStatus="false"/>
-            </imsss:objective>
+            <imsss:primaryObjective objectiveID="assessment_satisfied">
+              <imsss:mapInfo targetObjectiveID="com.scorm.golfsamples.sequencing.preorposttestrollup.assessment_satisfied" readNormalizedMeasure="true" readSatisfiedStatus="true"/>
+            </imsss:primaryObjective>
           </imsss:objectives>
 
-          <imsss:deliveryControls completionSetByContent="true" objectiveSetByContent="true"/>
         </imsss:sequencing>
       </item>
+      
       <imsss:sequencing>
-        <!--Both choice and flow navigation are allowed-->
+
         <imsss:controlMode choice="true" flow="true"/>
+
+        <imsss:rollupRules>
+          <imsss:rollupRule childActivitySet="any">
+            <imsss:rollupConditions>
+              <imsss:rollupCondition condition="satisfied"/>
+            </imsss:rollupConditions>
+            <imsss:rollupAction action="completed"/>
+          </imsss:rollupRule>
+        </imsss:rollupRules>
+        
       </imsss:sequencing>
     </organization>
   </organizations>
@@ -238,15 +291,4 @@ test.
     </resource>
   </resources>
 
-  <imsss:sequencingCollection>
-
-    <imsss:sequencing ID="content_seq_rules">
-      
-      <!-- Set all content SCOs to not count towards any rollup. Only the post test will count-->
-      <imsss:rollupRules rollupObjectiveSatisfied="false" rollupProgressCompletion="false" objectiveMeasureWeight="0"></imsss:rollupRules>
-
-      <imsss:deliveryControls completionSetByContent="true" objectiveSetByContent="true"/>
-
-    </imsss:sequencing>
-  </imsss:sequencingCollection>
 </manifest>
