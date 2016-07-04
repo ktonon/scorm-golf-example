@@ -1,16 +1,17 @@
 <?xml version="1.0" standalone="no" ?>
 <!--
-Single SCO with basic runtime calls. SCORM 2004 3rd Edition.
+Single SCO with advanced runtime calls. SCORM 2004 3rd Edition.
 
 Provided by Rustici Software - http://www.scorm.com
 
-This example demonstrates the use of basic runtime calls in a multi-page SCO. It
-includes a demonstration of bookmarking, status reporting (completion and success), 
-score and time. It also includes the addition of a basic "controller" for providing
-intra-SCO navigation.
+This example demonstrates the use of more advanced runtime calls in a multi-page SCO. It
+includes a demonstration of reporting interactions (question results), progress
+towards specific learning objective and overall progress towards completion. 
+It also demonstrates using the manifest to specify a passing score rather than 
+hard coding the passing score within the content.
 -->
 
-<manifest identifier="com.scorm.golfsamples.runtime.basicruntime.20043rd" version="1"
+<manifest identifier="com.scorm.golfsamples.runtime.advancedruntime.20043rd" version="1"
           xmlns="http://www.imsglobal.org/xsd/imscp_v1p1"
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xmlns:adlcp="http://www.adlnet.org/xsd/adlcp_v1p3"
@@ -29,11 +30,36 @@ intra-SCO navigation.
 	</metadata>
   <organizations default="golf_sample_default_org">
 		<organization identifier="golf_sample_default_org" adlseq:objectivesGlobalToSystem="false">
-			<title>Golf Explained - Run-time Basic Calls</title>
+			<title>Golf Explained - Run-time Advanced Calls</title>
 			<item identifier="item_1" identifierref="resource_1">
 				<title>Golf Explained</title>
-        <!-- Include some basic sequencing information that overrides the defaults-->
         <imsss:sequencing>
+          <imsss:objectives>
+            <!-- 
+            The "primary objective" of an activity holds the data for the activity's
+            overall satisfaction and score. This element identifies the primary objective.
+            Indicating that the objective is "satisfied by measure" means that the 
+            activity's success status is derrived from the activity's score in relation
+            to the mastery score. In other words, if the score is greater than the passing
+            score, the the activity is passed. If it is less, then it is failed. The 
+            "min normalized measure" defines the passing score for the activity. This example
+            sets the passing score to 0.8, or 80%.
+            -->
+            <imsss:primaryObjective objectiveID="PRIMARYOBJ" satisfiedByMeasure="true">
+              <imsss:minNormalizedMeasure>0.8</imsss:minNormalizedMeasure>
+            </imsss:primaryObjective>
+            
+            <!--
+            Define four secondary objectives that correspond to the specific
+            learning objectives of this training. These are simply defined for
+            reporting purposes in this example. They could also be used for
+            sequencing rules.
+            -->
+            <imsss:objective objectiveID="obj_etiquette"></imsss:objective>
+            <imsss:objective objectiveID="obj_handicapping"></imsss:objective>
+            <imsss:objective objectiveID="obj_havingfun"></imsss:objective>
+            <imsss:objective objectiveID="obj_playing"></imsss:objective>
+          </imsss:objectives>
           <imsss:deliveryControls completionSetByContent="true" objectiveSetByContent="true"/>
         </imsss:sequencing>
 			</item>

@@ -5,10 +5,10 @@ Creative Commons Attribution 3.0 United States License
 
 Want to make SCORM easy? See our solutions at http://www.scorm.com.
 
-This example demonstrates the use of basic runtime calls in a multi-page SCO. It
-includes a demonstration of bookmarking, status reporting (completion and success), 
-score and time. It also includes the addition of a basic "controller" for providing
-intra-SCO navigation.
+This example demonstrates the use of more advanced runtime calls in a multi-page SCO. It
+includes a demonstration of reporting interactions (question results), and progress
+towards specific learning objective. It also demonstrates using the manifest to specify
+a passing score rather than hard coding the passing score within the content.
 */
 
 
